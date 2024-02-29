@@ -95,7 +95,7 @@ namespace gspro_r10
       {
         LogMetrics(e.Metrics);
         ConnectionManager.SendShot(
-          BallDataFromLaunchMonitorMetrics(e.Metrics?.BallMetrics),
+          BallDataFromLaunchMonitorMetrics(e.Metrics?.BallMetrics, Configuration),
           ClubDataFromLaunchMonitorMetrics(e.Metrics?.ClubMetrics)
         );
       };
@@ -133,19 +133,27 @@ namespace gspro_r10
           return pairedDev;
       return null;
     }
-
-    public static BallData? BallDataFromLaunchMonitorMetrics(BallMetrics? ballMetrics)
+	
+	
+	
+    public static BallData? BallDataFromLaunchMonitorMetrics(BallMetrics? ballMetrics, IConfigurationSection configuration)
     {
       if (ballMetrics == null) return null;
+	  
+	  float SpinAxisMult = float.Parse(configuration["spinAxis"] ?? "1");
+	  float TotalSpinMult = float.Parse(configuration["totalSpin"] ?? "1");
+	  float SideSpinMult = float.Parse(configuration["sideSpin"] ?? "1");
+	  float BackSpinMult = float.Parse(configuration["backSpin"] ?? "1");
+	  
       return new BallData()
       {
         HLA = ballMetrics.LaunchDirection,
         VLA = ballMetrics.LaunchAngle,
         Speed = ballMetrics.BallSpeed * METERS_PER_S_TO_MILES_PER_HOUR,
-        SpinAxis = ballMetrics.SpinAxis * -1,
-        TotalSpin = ballMetrics.TotalSpin,
-        SideSpin = ballMetrics.TotalSpin * Math.Sin(-1 * ballMetrics.SpinAxis * Math.PI / 180),
-        BackSpin = ballMetrics.TotalSpin * Math.Cos(-1 * ballMetrics.SpinAxis * Math.PI / 180)
+        SpinAxis = ballMetrics.SpinAxis * -1 * SpinAxisMult,
+        TotalSpin = ballMetrics.TotalSpin * TotalSpinMult,
+        SideSpin = ballMetrics.TotalSpin * Math.Sin(-1 * ballMetrics.SpinAxis * Math.PI / 180) * SideSpinMult,
+        BackSpin = ballMetrics.TotalSpin * Math.Cos(-1 * ballMetrics.SpinAxis * Math.PI / 180) * BackSpinMult
       };
     }
 
